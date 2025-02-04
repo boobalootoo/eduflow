@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Flowchart</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        body {
+            font-family: 'VT323', monospace;
+            background-color: #87CEEB; /* Sky blue background */
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%23FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20M4 4v16M4 4h11a2 2 0 0 1 2 2v14M4 4H3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h1"/></svg>');
+            background-size: 100px 100px;
+        }
+        .window {
+            width: 700px;
+            max-height: 80%;
+            background-color: #F0F8FF; /* Light blue for contrast */
+            border: 4px solid #4682B4; /* Steel blue border */
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        .title-bar {
+            background-color: #4682B4;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 12px;
+            border-radius: 4px 4px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .title-bar span {
+            margin-left: 10px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+        li {
+            cursor: pointer;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #4682B4;
+            border-radius: 8px;
+            background-color: white;
+            transition: background-color 0.3s, transform 0.2s;
+            font-size: 24px;
+        }
+        li:hover {
+            background-color: #4682B4;
+            color: white;
+            transform: scale(1.05);
+        }
+        li.circled {
+            background-color: #FFD700;
+        }
+        input {
+            padding: 15px;
+            width: 90%;
+            margin: 15px 0;
+            border: 2px solid #4682B4;
+            border-radius: 8px;
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+        }
+        button {
+            background-color: #4682B4;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-family: 'VT323', monospace;
+            font-size: 22px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #5A9BD3;
+        }
+    </style>
+</head>
+<body>
+    <div class="window">
+        <div class="title-bar">
+            <span>Interactive Flowchart</span>
+        </div>
+        <div id="content">
+            <h3 style="font-size: 26px;">Have you decided what you want to do after school?</h3>
+            <ul>
+                <li onclick="nextStep('yes')">Yes</li>
+                <li onclick="nextStep('no')">No</li>
+            </ul>
+        </div>
+    </div>
+    <audio id="click-sound" src="https://freesound.org/data/previews/348/348654_5121236-lq.mp3"></audio>
+    <script>
+        const steps = {
+            start: {
+                question: "Have you decided what you want to do after school?",
+                options: {
+                    yes: "collegeOrOther",
+                    no: "knowCareer"
+                }
+            },
+            collegeOrOther: {
+                question: "College or Other?",
+                options: {
+                    college: "whichCollege",
+                    other: "requirements"
+                }
+            },
+            knowCareer: {
+                question: "Do you know what career you want?",
+                options: {
+                    yes: "result",
+                    no: "exploreJobs"
+                }
+            },
+            exploreJobs: {
+                question: "Do you know of any jobs you think you'd enjoy?",
+                options: {
+                    yes: "result",
+                    no: "exploreHobbies"
+                }
+            },
+            exploreHobbies: {
+                question: "Circle any hobbies/interests to explore:",
+                options: {
+                    done: "result"
+                },
+                customContent: () => {
+                    const hobbies = [
+                        "Watch TV", "Watch Movies", "Make Music", "Play Games",
+                        "Read Books", "Draw Art", "Learn Programming", "Cook Food",
+                        "Exercise", "Play Sports", "Gardening", "Photography",
+                        "Travel", "Write Stories", "Sing Songs", "Dance",
+                        "Solve Puzzles", "Volunteer", "Meditate", "Play Board Games"
+                    ];
+                    const hobbyList = hobbies.map(hobby => `<li onclick="toggleCircle(this)">${hobby}</li>`).join('');
+                    return `
+                        <h3 style="font-size: 26px;">Circle any hobbies/interests to explore:</h3>
+                        <ul id="hobby-list">${hobbyList}</ul>
+                        <h3 style="font-size: 26px;">Add more hobbies:</h3>
+                        <input id="new-hobby" type="text" placeholder="Type here">
+                        <button onclick="addHobby()">Add</button>
+                        <button onclick="nextStep('done')">Next</button>
+                    `;
+                }
+            },
+            whichCollege: {
+                question: "Which college?",
+                options: {
+                    bhavsic: "chosenSubjects",
+                    varndean: "chosenSubjects",
+                    other: "requirements"
+                }
+            },
+            chosenSubjects: {
+                question: "Have you chosen subjects?",
+                options: {
+                    yes: "knowRequirements",
+                    no: "research"
+                }
+            },
+            knowRequirements: {
+                question: "Do you know the requirements for these subjects?",
+                options: {
+                    yes: "result",
+                    no: "research"
+                }
+            },
+            research: {
+                question: "Research the requirements!",
+                options: {
+                    done: "result"
+                }
+            },
+            result: {
+                question: "Make an appointment!",
+                options: {}
+            }
+        };
+
+        function nextStep(option) {
+            const contentDiv = document.getElementById('content');
+            const currentStep = contentDiv.dataset.step || 'start';
+            const nextStep = steps[currentStep].options[option];
+
+            if (nextStep) {
+                const stepContent = steps[nextStep];
+                contentDiv.dataset.step = nextStep;
+                if (stepContent.customContent) {
+                    contentDiv.innerHTML = stepContent.customContent();
+                } else {
+                    contentDiv.innerHTML = `
+                        <h3 style="font-size: 26px;">${stepContent.question}</h3>
+                        <ul>
+                            ${Object.entries(stepContent.options)
+                                .map(([key, value]) => `<li onclick="nextStep('${key}')">${key}</li>`)
+                                .join('')}
+                        </ul>
+                    `;
+                }
+            } else {
+                contentDiv.innerHTML = `<h3 style="font-size: 26px;">Make an appointment!</h3>`;
+            }
+        }
+
+        function playClick() {
+            const clickSound = document.getElementById('click-sound');
+            clickSound.currentTime = 0;
+            clickSound.play();
+        }
+
+        function toggleCircle(item) {
+            playClick();
+            item.classList.toggle('circled');
+        }
+
+        function addHobby() {
+            const input = document.getElementById('new-hobby');
+            const newHobby = input.value.trim();
+            if (newHobby) {
+                const hobbyList = document.querySelector('#hobby-list');
+                const newItem = document.createElement('li');
+                newItem.textContent = newHobby;
+                newItem.onclick = () => toggleCircle(newItem);
+                hobbyList.appendChild(newItem);
+                playClick();
+                input.value = '';
+            }
+        }
+    </script>
+</body>
+</html>
